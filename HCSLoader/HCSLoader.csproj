@@ -58,6 +58,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CharacterAdditionMod.cs" />
+    <Compile Include="CharacterModificationMod.cs" />
+    <Compile Include="CharacterShared.cs" />
+    <Compile Include="Extensions.cs" />
     <Compile Include="WardobeWindowPaging.cs" />
     <Compile Include="GirlsWindowPaging.cs" />
     <Compile Include="HCSLoader.cs" />

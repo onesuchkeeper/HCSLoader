@@ -25,26 +25,21 @@ namespace HCSLoader
 		public string ModDirectory { get; set; }
 
 
-		public static CharacterAdditionMod Load(string directory)
+		public static bool TryLoad(string directory, out CharacterAdditionMod mod)
 		{
-			string girlManifestPath = Path.Combine(directory, "girl.json");
+			string girlManifestPath = Path.Combine(directory, "addgirl.json");
 
-			var mod = JsonConvert.DeserializeObject<CharacterAdditionMod>(File.ReadAllText(girlManifestPath));
+			if (!File.Exists(girlManifestPath))
+			{
+				mod = null;
+				return false;
+			}
+
+			mod = JsonConvert.DeserializeObject<CharacterAdditionMod>(File.ReadAllText(girlManifestPath));
 
 			mod.ModDirectory = directory;
 
-			return mod;
+			return true;
 		}
-	}
-
-	public class CharacterPart
-	{
-		public string File { get; set; }
-
-		public string Type { get; set; }
-
-		public int X { get; set; }
-
-		public int Y { get; set; }
 	}
 }

@@ -11,12 +11,13 @@ using static HCSLoader.ResourceLoader;
 
 namespace HCSLoader
 {
-	[BepInPlugin("com.bepis.hcsloader", "HCSLoader", "1.0")]
+	[BepInPlugin("com.bepis.hcsloader", "HCSLoader", "1.1")]
 	public class HCSLoader : BaseUnityPlugin
 	{
 		public new static ManualLogSource Logger;
 
 		public static List<CharacterAdditionMod> CharacterAdditions = new List<CharacterAdditionMod>();
+		public static List<CharacterModificationMod> CharacterModifications = new List<CharacterModificationMod>();
 
 		public HCSLoader()
 		{
@@ -28,15 +29,24 @@ namespace HCSLoader
 
 			if (!Directory.Exists(modsDirectory))
 				Directory.CreateDirectory(modsDirectory);
-
+			
 			foreach (var subdir in Directory.GetDirectories(modsDirectory, "*", SearchOption.TopDirectoryOnly))
 			{
-				var mod = CharacterAdditionMod.Load(subdir);
-
-				CharacterAdditions.Add(mod);
+				if (CharacterAdditionMod.TryLoad(subdir, out var addMod))
+				{
+					CharacterAdditions.Add(addMod);
+				}
+				else if (CharacterModificationMod.TryLoad(subdir, out var editMod))
+				{
+					CharacterModifications.Add(editMod);
+				}
+				else
+				{
+					Logger.LogWarning($"Unknown mod type for folder '{Path.GetFileName(subdir)}', skipping");
+				}
 			}
 			
-			Logger.Log(LogLevel.Message, $"Loaded {CharacterAdditions.Count} mods.");
+			Logger.Log(LogLevel.Message, $"Loaded {CharacterAdditions.Count + CharacterModifications.Count} mods.");
 		}
 
 		public void Update()
@@ -50,6 +60,8 @@ namespace HCSLoader
 
 		public static void PerformLoad()
 		{
+			//load additions
+
 			Dictionary<int, GirlDefinition> definitions = (Dictionary<int, GirlDefinition>)AccessTools.Field(typeof(GirlData), "_definitions").GetValue(Game.Data.Girls);
 			int currentId = 19;
 
@@ -83,10 +95,10 @@ namespace HCSLoader
 																   .Find(y => y.fetishName.Equals(x, StringComparison.OrdinalIgnoreCase)))
 												  .ToList();
 
-				girlDefinition.dollParts = ProcessDollParts(addition).ToList();
+				girlDefinition.dollParts = ProcessDollParts(addition, out var outfits).ToList();
 
 				girlDefinition.hairstyles = new List<string> { "Default", "Default", "Default", "Default", "Default", };
-				girlDefinition.outfits = new List<string> { "Default", "Default", "Default", "Default", "Default", };
+				girlDefinition.outfits = outfits;
 
 				girlDefinition.voiceRecruit = LoadAudioGroup(Path.Combine(addition.ModDirectory, "voice-recruit"));
 				girlDefinition.voiceEmploy = LoadAudioGroup(Path.Combine(addition.ModDirectory, "voice-employ"));
@@ -105,13 +117,65 @@ namespace HCSLoader
 			AccessTools.Field(typeof(GirlData), "_highestId").SetValue(Game.Data.Girls, currentId);
 
 			Logger.Log(LogLevel.Info, $"{Game.Data.Girls.GetAll().Count} girls loaded");
+
+
+
+			//load modifications
+
+			var girlDict = Game.Data.Girls.GetAll().ToDictionary(x => x.girlName, x => x, StringComparer.OrdinalIgnoreCase);
+
+			foreach (var modification in CharacterModifications)
+			{
+				if (!girlDict.TryGetValue(modification.CharacterName, out var girl))
+				{
+					Logger.LogWarning($"Unable to find girl '{modification.CharacterName}', skipping");
+					continue;
+				}
+
+				if (modification.ReplacementOutfits != null)
+					foreach (var kv in modification.ReplacementOutfits)
+					{
+						if (kv.Key < 1 || kv.Key > 5)
+						{
+							Logger.LogWarning($"({modification.CharacterName}) Invalid outfit index '{kv.Key}', skipping");
+							continue;
+						}
+
+						if (kv.Value.Name != null)
+							girl.outfits[kv.Key - 1] = kv.Value.Name;
+
+						var dollPart = new GirlDefinitionDollPart
+						{
+							editorExpanded = true,
+							sprite = LoadSprite(Path.Combine(modification.ModDirectory, kv.Value.File)),
+							type = GirlDollPartType.OUTFIT,
+							x = kv.Value.X,
+							y = kv.Value.Y
+						};
+
+						int? index = girl.dollParts.FindNthIndex(kv.Key, x => x.type == GirlDollPartType.OUTFIT);
+
+						if (!index.HasValue)
+						{
+							Logger.LogWarning($"({modification.CharacterName}) Outfit {kv.Key} was not found, skipping");
+							continue;
+						}
+
+						girl.dollParts[index.Value] = dollPart;
+					}
+			}
+
+			Logger.Log(LogLevel.Info, $"{CharacterModifications.Count} modifications loaded");
 		}
 
-		protected static IEnumerable<GirlDefinitionDollPart> ProcessDollParts(CharacterAdditionMod addition)
+		protected static List<GirlDefinitionDollPart> ProcessDollParts(CharacterAdditionMod addition, out List<string> outfits)
 		{
+			List<GirlDefinitionDollPart> parts = new List<GirlDefinitionDollPart>(addition.Parts.Count);
+			outfits = new List<string>(5);
+
 			foreach (var part in addition.Parts)
 			{
-				yield return new GirlDefinitionDollPart
+				var dollPart = new GirlDefinitionDollPart
 				{
 					editorExpanded = true,
 					sprite = LoadSprite(Path.Combine(addition.ModDirectory, part.File)),
@@ -119,7 +183,19 @@ namespace HCSLoader
 					x = part.X,
 					y = part.Y
 				};
+
+				parts.Add(dollPart);
+
+				if (dollPart.type == GirlDollPartType.OUTFIT)
+				{
+					outfits.Add(part.Name ?? $"Outfit {outfits.Count + 1}");
+				}
 			}
+
+			while (outfits.Count < 5)
+				outfits.Add("Default");
+
+			return parts;
 		}
 
 		#region Hooks

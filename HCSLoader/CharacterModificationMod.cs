@@ -8,12 +8,8 @@ namespace HCSLoader
 	public class CharacterModificationMod
 	{
 		public string CharacterName { get; set; }
-
-		[JsonIgnore]
+		
 		public Dictionary<int, CharacterPart> ReplacementOutfits { get; set; }
-
-		[JsonProperty("ReplacementOutfits")]
-		private Dictionary<string, CharacterPart> internalReplacementOutfits { get; set; }
 
 
 		public string ModDirectory { get; set; }
@@ -28,13 +24,24 @@ namespace HCSLoader
 				mod = null;
 				return false;
 			}
-			
-			mod = JsonConvert.DeserializeObject<CharacterModificationMod>(File.ReadAllText(girlManifestPath));
 
-			mod.ReplacementOutfits = mod.internalReplacementOutfits.ToDictionary(x => int.Parse(x.Key), x => x.Value);
-			mod.ModDirectory = directory;
+			var template = JsonConvert.DeserializeObject<SerializationTemplate>(File.ReadAllText(girlManifestPath));
+
+			mod = new CharacterModificationMod
+			{
+				CharacterName = template.CharacterName,
+				ReplacementOutfits = template.ReplacementOutfits.ToDictionary(x => int.Parse(x.Key), x => x.Value),
+				ModDirectory = directory
+			};
 
 			return true;
+		}
+
+		private class SerializationTemplate
+		{
+			public string CharacterName { get; set; }
+
+			public Dictionary<string, CharacterPart> ReplacementOutfits { get; set; }
 		}
 	}
 }

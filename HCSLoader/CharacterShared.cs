@@ -12,4 +12,13 @@
 
 		public string Name { get; set; }
 	}
+
+	public class HairstylePart
+	{
+		public string Name { get; set; }
+
+		public CharacterPart Front { get; set; }
+		public CharacterPart Back { get; set; }
+		public CharacterPart Shadow { get; set; }
+	}
 }

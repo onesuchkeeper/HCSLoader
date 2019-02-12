@@ -33,9 +33,9 @@ namespace HCSLoader
 			}
 		}
 
-		private static readonly FieldInfo girlDefinitionFieldInfo = AccessTools.Field(typeof(UiWardrobeWindowSlot), "_girlDefinition");
-		private static readonly FieldInfo wardrobeGirlSaveDataFieldInfo = AccessTools.Field(typeof(UiWardrobeWindowSlot), "_wardrobeGirlSaveData");
-		private static readonly MethodInfo wardrobeWindowRefreshMethodInfo = AccessTools.Method(typeof(UiWardrobeWindow), "Refresh");
+		private static readonly FieldInfo GirlDefinitionFieldInfo = AccessTools.Field(typeof(UiWardrobeWindowSlot), "_girlDefinition");
+		private static readonly FieldInfo WardrobeGirlSaveDataFieldInfo = AccessTools.Field(typeof(UiWardrobeWindowSlot), "_wardrobeGirlSaveData");
+		private static readonly MethodInfo WardrobeWindowRefreshMethodInfo = AccessTools.Method(typeof(UiWardrobeWindow), "Refresh");
 		public static void ReInitWardrobeWindow(UiWardrobeWindow window)
 		{
 			for (int i = 0; i < GirlsWindowPaging.GirlSlotCount; i++)
@@ -45,15 +45,15 @@ namespace HCSLoader
 
 				if (slotOffset >= Game.Persistence.saveData.wardrobeGirls.Count)
 				{
-					girlDefinitionFieldInfo.SetValue(slot, null);
-					wardrobeGirlSaveDataFieldInfo.SetValue(slot, null);
+					GirlDefinitionFieldInfo.SetValue(slot, null);
+					WardrobeGirlSaveDataFieldInfo.SetValue(slot, null);
 				}
 				else
 				{
 					var girl = Game.Persistence.saveData.wardrobeGirls[slotOffset];
 
-					girlDefinitionFieldInfo.SetValue(slot, Game.Data.Girls.Get(girl.girlId));
-					wardrobeGirlSaveDataFieldInfo.SetValue(slot, girl);
+					GirlDefinitionFieldInfo.SetValue(slot, Game.Data.Girls.Get(girl.girlId));
+					WardrobeGirlSaveDataFieldInfo.SetValue(slot, girl);
 				}
 
 				slot.Refresh(false);
@@ -67,7 +67,7 @@ namespace HCSLoader
 			UiWardrobeWindow.storedSlotIndex = 0;
 			window.girlSlots[UiWardrobeWindow.storedSlotIndex].buttonBehavior.Disable(false);
 			
-			wardrobeWindowRefreshMethodInfo.Invoke(window, new object[] { false, true });
+			WardrobeWindowRefreshMethodInfo.Invoke(window, new object[] { false, true });
 
 
 			//fix for ghost tooltip when paging

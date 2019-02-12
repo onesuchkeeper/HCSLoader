@@ -34,10 +34,10 @@ namespace HCSLoader
 			}
 		}
 
-		private static FieldInfo girlSlotsFieldInfo = AccessTools.Field(typeof(UiGirlsWindow), "_girlSlots");
+		private static readonly FieldInfo GirlSlotsFieldInfo = AccessTools.Field(typeof(UiGirlsWindow), "_girlSlots");
 		public static void ReInitGirlWindow(UiGirlsWindow window)
 		{
-			List<UiGirlsWindowSlot> girlSlots = (List<UiGirlsWindowSlot>)girlSlotsFieldInfo.GetValue(window);
+			List<UiGirlsWindowSlot> girlSlots = (List<UiGirlsWindowSlot>)GirlSlotsFieldInfo.GetValue(window);
 
 			if (GirlWindowOffset >= Game.Manager.Player.girls.Count || GirlWindowOffset < 0)
 			{

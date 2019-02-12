@@ -19,6 +19,8 @@ namespace HCSLoader
 		public static List<CharacterAdditionMod> CharacterAdditions = new List<CharacterAdditionMod>();
 		public static List<CharacterModificationMod> CharacterModifications = new List<CharacterModificationMod>();
 
+		public const int MaxOutfits = 5;
+
 		public HCSLoader()
 		{
 			Logger = base.Logger;
@@ -74,7 +76,7 @@ namespace HCSLoader
 				girlDefinition.girlName = addition.Name;
 				girlDefinition.girlDescription = addition.Description;
 				girlDefinition.girlBustOffset = 0;
-				girlDefinition.girlIcons = new[] { LoadSprite(Path.Combine(addition.ModDirectory, "icon.png")) };
+				girlDefinition.girlIcons = LoadIconSprites(addition.ModDirectory, true).OrderBy(x => x.Key).Select(x => x.Value).ToArray();
 				girlDefinition.girlPhotoThumbnail = LoadSprite(Path.Combine(addition.ModDirectory, "photothumbnail.png"));
 				girlDefinition.girlPromo = LoadSprite(Path.Combine(addition.ModDirectory, "photo.png"));
 				girlDefinition.promoIsLewd = false;
@@ -95,10 +97,7 @@ namespace HCSLoader
 																   .Find(y => y.fetishName.Equals(x, StringComparison.OrdinalIgnoreCase)))
 												  .ToList();
 
-				girlDefinition.dollParts = ProcessDollParts(addition, out var outfits).ToList();
-
-				girlDefinition.hairstyles = new List<string> { "Default", "Default", "Default", "Default", "Default", };
-				girlDefinition.outfits = outfits;
+				girlDefinition.dollParts = ProcessDollParts(addition, out girlDefinition.outfits, out girlDefinition.hairstyles).ToList();
 
 				girlDefinition.voiceRecruit = LoadAudioGroup(Path.Combine(addition.ModDirectory, "voice-recruit"));
 				girlDefinition.voiceEmploy = LoadAudioGroup(Path.Combine(addition.ModDirectory, "voice-employ"));
@@ -118,7 +117,7 @@ namespace HCSLoader
 
 			Logger.Log(LogLevel.Info, $"{Game.Data.Girls.GetAll().Count} girls loaded");
 
-
+			
 
 			//load modifications
 
@@ -132,10 +131,30 @@ namespace HCSLoader
 					continue;
 				}
 
+				void ReplacePart(GirlDollPartType type, int inputIndex, CharacterPart part)
+				{
+					int? index = girl.dollParts.FindNthIndex(inputIndex, x => x.type == type);
+
+					if (!index.HasValue)
+					{
+						Logger.LogWarning($"({modification.CharacterName}) {(type == GirlDollPartType.OUTFIT ? "Outfit" : "Hairstyle")} {inputIndex} was not found, skipping");
+						return;
+					}
+					
+					girl.dollParts[index.Value] = new GirlDefinitionDollPart
+					{
+						editorExpanded = true,
+						sprite = LoadSprite(Path.Combine(modification.ModDirectory, part.File)),
+						type = type,
+						x = part.X,
+						y = part.Y
+					};
+				}
+
 				if (modification.ReplacementOutfits != null)
 					foreach (var kv in modification.ReplacementOutfits)
 					{
-						if (kv.Key < 1 || kv.Key > 5)
+						if (kv.Key < 1 || kv.Key > MaxOutfits)
 						{
 							Logger.LogWarning($"({modification.CharacterName}) Invalid outfit index '{kv.Key}', skipping");
 							continue;
@@ -144,34 +163,45 @@ namespace HCSLoader
 						if (kv.Value.Name != null)
 							girl.outfits[kv.Key - 1] = kv.Value.Name;
 
-						var dollPart = new GirlDefinitionDollPart
-						{
-							editorExpanded = true,
-							sprite = LoadSprite(Path.Combine(modification.ModDirectory, kv.Value.File)),
-							type = GirlDollPartType.OUTFIT,
-							x = kv.Value.X,
-							y = kv.Value.Y
-						};
+						ReplacePart(GirlDollPartType.OUTFIT, kv.Key, kv.Value);
+					}
 
-						int? index = girl.dollParts.FindNthIndex(kv.Key, x => x.type == GirlDollPartType.OUTFIT);
-
-						if (!index.HasValue)
+				if (modification.ReplacementHairstyles != null)
+					foreach (var kv in modification.ReplacementHairstyles)
+					{
+						if (kv.Key < 1 || kv.Key > MaxOutfits)
 						{
-							Logger.LogWarning($"({modification.CharacterName}) Outfit {kv.Key} was not found, skipping");
+							Logger.LogWarning($"({modification.CharacterName}) Invalid hairstyle index '{kv.Key}', skipping");
 							continue;
 						}
 
-						girl.dollParts[index.Value] = dollPart;
+						if (kv.Value.Name != null)
+							girl.hairstyles[kv.Key - 1] = kv.Value.Name;
+
+						if (kv.Value.Front != null)
+							ReplacePart(GirlDollPartType.FRONTHAIR, kv.Key, kv.Value.Front);
+						
+						if (kv.Value.Back != null)
+							ReplacePart(GirlDollPartType.BACKHAIR, kv.Key, kv.Value.Back);
+						
+						if (kv.Value.Shadow != null)
+							ReplacePart(GirlDollPartType.HAIRSHADOW, kv.Key, kv.Value.Shadow);
 					}
+
+				foreach (var kv in LoadIconSprites(modification.ModDirectory, false))
+				{
+					girl.girlIcons[kv.Key - 1] = kv.Value;
+				}
 			}
 
 			Logger.Log(LogLevel.Info, $"{CharacterModifications.Count} modifications loaded");
 		}
 
-		protected static List<GirlDefinitionDollPart> ProcessDollParts(CharacterAdditionMod addition, out List<string> outfits)
+		protected static List<GirlDefinitionDollPart> ProcessDollParts(CharacterAdditionMod addition, out List<string> outfits, out List<string> hairstyles)
 		{
 			List<GirlDefinitionDollPart> parts = new List<GirlDefinitionDollPart>(addition.Parts.Count);
-			outfits = new List<string>(5);
+			outfits = new List<string>(MaxOutfits);
+			hairstyles = new List<string>(MaxOutfits);
 
 			foreach (var part in addition.Parts)
 			{
@@ -186,16 +216,47 @@ namespace HCSLoader
 
 				parts.Add(dollPart);
 
-				if (dollPart.type == GirlDollPartType.OUTFIT)
+				if (dollPart.type == GirlDollPartType.OUTFIT && outfits.Count < MaxOutfits)
 				{
 					outfits.Add(part.Name ?? $"Outfit {outfits.Count + 1}");
 				}
+				else if (dollPart.type == GirlDollPartType.FRONTHAIR && hairstyles.Count < MaxOutfits)
+				{
+					hairstyles.Add(part.Name ?? $"Hairstyle {outfits.Count + 1}");
+				}
 			}
 
-			while (outfits.Count < 5)
+			while (outfits.Count < MaxOutfits)
 				outfits.Add("Default");
 
+			while (hairstyles.Count < MaxOutfits)
+				hairstyles.Add("Default");
+
 			return parts;
+		}
+
+		protected static Dictionary<int, Sprite> LoadIconSprites(string directory, bool fillBlanks)
+		{
+			Dictionary<int, Sprite> sprites = new Dictionary<int, Sprite>();
+
+			for (int i = 1; i < 6; i++)
+			{
+				string path = Path.Combine(directory, $"icon{i}.png");
+
+				if (File.Exists(path))
+				{
+					sprites[i] = LoadSprite(path);
+				}
+				else if (fillBlanks)
+				{
+					if (i == 1)
+						throw new Exception("Could not find icon #1");
+
+					sprites[i] = sprites[1];
+				}
+			}
+
+			return sprites;
 		}
 
 		#region Hooks

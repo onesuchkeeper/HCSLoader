@@ -24,7 +24,7 @@ namespace HCSLoader
 		public HCSLoader()
 		{
 			Logger = base.Logger;
-
+			
 			HarmonyWrapper.PatchAll();
 
 			string modsDirectory = Path.Combine(Paths.GameRootPath, "Mods");
@@ -70,6 +70,25 @@ namespace HCSLoader
 			foreach (var addition in CharacterAdditions)
 			{
 				Logger.LogInfo($"Loading girl '{addition.Name}'");
+
+				//validation
+
+				if (!File.Exists(Path.Combine(addition.ModDirectory, "photo.png")))
+				{
+					Logger.LogError($"Could not find character photo at '{Path.Combine(addition.ModDirectory, "photo.png")}', skipping");
+					continue;
+				}
+				if (!File.Exists(Path.Combine(addition.ModDirectory, "photothumbnail.png")))
+				{
+					Logger.LogError($"Could not find character photo thumbnail at '{Path.Combine(addition.ModDirectory, "photothumbnail.png")}', skipping");
+					continue;
+				}
+				if (!File.Exists(Path.Combine(addition.ModDirectory, "icon1.png")))
+				{
+					Logger.LogError($"Could not find icon #1 at '{Path.Combine(addition.ModDirectory, "icon1.png")}', skipping");
+					continue;
+				}
+
 
 				var girlDefinition = ScriptableObject.CreateInstance<GirlDefinition>();
 

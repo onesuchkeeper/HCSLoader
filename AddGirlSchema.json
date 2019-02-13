@@ -1,0 +1,239 @@
+{
+  "definitions": {},
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "hcsloader.addgirl",
+  "type": "object",
+  "title": "The Root Schema",
+  "description": "An explanation about the purpose of this instance.",
+  "required": [
+    "name",
+    "description",
+    "age",
+    "cupSize",
+    "weight",
+    "smokes",
+    "drinks",
+    "talentLevel",
+    "styleLevel",
+    "fetishes",
+    "parts"
+  ],
+  "properties": {
+    "name": {
+      "$id": "#/properties/name",
+      "type": "string",
+      "title": "Name",
+      "description": "The name of the girl that's being added.",
+      "examples": [
+        "Momo"
+      ]
+    },
+    "description": {
+      "$id": "#/properties/description",
+      "type": "string",
+      "title": "Description",
+      "description": "The description of the girl to show in the information tooltip.",
+      "examples": [
+        "Momo is very sweet, innocent and adorable; with a naive child-like mentality about most things."
+      ]
+    },
+    "age": {
+      "$id": "#/properties/age",
+      "type": "integer",
+      "title": "Age",
+      "description": "The age of the girl to show in the Girls window.",
+      "examples": [
+        1
+      ]
+    },
+    "cupSize": {
+      "$id": "#/properties/cupSize",
+      "type": "string",
+      "enum": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "DD",
+        "F"
+      ],
+      "title": "Cupsize",
+      "description": "The cupsize of the girl to show in the Girls window.",
+      "examples": [
+        "B"
+      ]
+    },
+    "weight": {
+      "$id": "#/properties/weight",
+      "type": "integer",
+      "title": "Weight",
+      "description": "The weight of the girl to show in the Girls window.",
+      "examples": [
+        100
+      ]
+    },
+    "smokes": {
+      "$id": "#/properties/smokes",
+      "type": "integer",
+      "title": "Smoking frequency",
+      "description": "How frequently the girl smokes. 0 for Never, 1 for Sometimes, 2 for Frequently, and 3 for addicted.",
+      "examples": [
+        0
+      ],
+      "minimum": 0.0,
+      "maximum": 3.0
+    },
+    "drinks": {
+      "$id": "#/properties/drinks",
+      "type": "integer",
+      "title": "Drinking frequency",
+      "description": "How frequently the girl drinks. 0 for Never, 1 for Sometimes, 2 for Frequently, and 3 for addicted.",
+      "examples": [
+        0
+      ],
+      "minimum": 0.0,
+      "maximum": 3.0
+    },
+    "talentLevel": {
+      "$id": "#/properties/talentLevel",
+      "type": "integer",
+      "title": "Starting Talent level",
+      "description": "The starting talent of the girl when you first recruit her.",
+      "examples": [
+        1
+      ],
+      "minimum": 1.0,
+      "maximum": 5.0
+    },
+    "styleLevel": {
+      "$id": "#/properties/styleLevel",
+      "type": "integer",
+      "title": "Starting Style level",
+      "description": "The starting style of the girl when you first recruit her.",
+      "examples": [
+        3
+      ],
+      "minimum": 1.0,
+      "maximum": 5.0
+    },
+    "fetishes": {
+      "$id": "#/properties/fetishes",
+      "type": "array",
+      "title": "Starting fetishes",
+      "description": "The starting fetishes of the girl.",
+      "minItems": 2,
+      "maxItems": 2,
+      "items": {
+        "$id": "#/properties/fetishes/items",
+        "type": "string",
+        "enum": [
+          "Ebony",
+          "Asian",
+          "Latina",
+          "Teen",
+          "MILF",
+          "Flat Chest",
+          "Huge Tits",
+          "Fit",
+          "Chubby",
+          "Thick Ass",
+          "Glasses",
+          "Tattoos",
+          "Squirting",
+          "Anal",
+          "Bondage",
+          "Furry",
+          "Water Sports",
+          "Cake Farting"
+        ],
+        "title": "Fetish",
+        "description": "A fetish of the girl.",
+        "examples": [
+          "Furry",
+          "Flat Chest"
+        ]
+      }
+    },
+    "parts": {
+      "$id": "#/properties/parts",
+      "type": "array",
+      "title": "Asset parts",
+      "description": "Parts of the girl that are assembled together as the complete sprite",
+      "items": {
+        "$id": "#/properties/parts/items",
+        "type": "object",
+        "title": "Part",
+        "description": "A part of a girl that is assembled with other parts to form a complete sprite of the girl.",
+        "minProperties": 1,
+        "required": [
+          "type",
+          "file",
+          "x",
+          "y"
+        ],
+        "properties": {
+          "type": {
+            "$id": "#/properties/parts/items/properties/type",
+            "type": "string",
+            "enum": [
+              "BACKHAIR",
+              "BODYCOLORS",
+              "HAIRSHADOW",
+              "BODYLINES",
+              "OUTFIT",
+              "MOUTH",
+              "EYES",
+              "EYELIDS",
+              "EYEBROWS",
+              "FRONTHAIR",
+              "SPECIAL"
+            ],
+            "title": "Part type",
+            "description": "The type of part. Determines functionality of the part (like blinking for EYES, or Z position for BACKHAIR etc.)",
+            "examples": [
+              "BODYCOLORS"
+            ]
+          },
+          "file": {
+            "$id": "#/properties/parts/items/properties/file",
+            "type": "string",
+            "title": "Texture file",
+            "description": "The filename that contains the texture for this file. Must be a .png file.",
+            "examples": [
+              "base.png"
+            ],
+            "pattern": "^.*\\.png$"
+          },
+          "name": {
+            "$id": "#/properties/parts/items/properties/name",
+            "type": "string",
+            "title": "Outfit/hairstyle name",
+            "description": "The name of the outfit or hairstyle this part adds. Valid only for OUTFIT and FRONTHAIR type parts.",
+            "examples": [
+              "Default Outfit"
+            ],
+            "pattern": "^.*\\.png$"
+          },
+          "x": {
+            "$id": "#/properties/parts/items/properties/x",
+            "type": "integer",
+            "title": "Sprite X position",
+            "description": "The position of the part in the X dimension.",
+            "examples": [
+              760
+            ]
+          },
+          "y": {
+            "$id": "#/properties/parts/items/properties/y",
+            "type": "integer",
+            "title": "Sprite Y position",
+            "description": "The position of the part in the X dimension.",
+            "examples": [
+              190
+            ]
+          }
+        }
+      }
+    }
+  }
+}

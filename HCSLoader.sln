@@ -13,6 +13,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "lib", "lib", "{AF5F8316-FE4
 		lib\System.Xml.dll = lib\System.Xml.dll
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Schemas", "Schemas", "{14E8B02B-BC2F-4813-8987-7CCBBDD72C70}"
+	ProjectSection(SolutionItems) = preProject
+		AddGirlSchema.json = AddGirlSchema.json
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Release|Any CPU = Release|Any CPU

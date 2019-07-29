@@ -211,8 +211,7 @@
             "description": "The name of the outfit or hairstyle this part adds. Valid only for OUTFIT and FRONTHAIR type parts.",
             "examples": [
               "Default Outfit"
-            ],
-            "pattern": "^.*\\.png$"
+            ]
           },
           "x": {
             "$id": "#/properties/parts/items/properties/x",

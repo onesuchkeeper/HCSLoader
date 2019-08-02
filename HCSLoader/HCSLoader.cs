@@ -5,18 +5,19 @@ using System.Linq;
 using BepInEx;
 using BepInEx.Harmony;
 using BepInEx.Logging;
-using Harmony;
+using HarmonyLib;
 using UnityEngine;
 using static HCSLoader.ResourceLoader;
 
 namespace HCSLoader
 {
-	[BepInPlugin("com.bepis.hcsloader", "HCSLoader", "1.1")]
+	[BepInPlugin("com.bepis.hcsloader", "HCSLoader", "1.2")]
 	public class HCSLoader : BaseUnityPlugin
 	{
 		public new static ManualLogSource Logger;
 
 		public static List<CharacterAdditionMod> CharacterAdditions = new List<CharacterAdditionMod>();
+		public static List<GirlDefinition> CharacterAdditionDefs = new List<GirlDefinition>();
 		public static List<CharacterModificationMod> CharacterModifications = new List<CharacterModificationMod>();
 
 		public const int MaxOutfits = 5;
@@ -24,14 +25,15 @@ namespace HCSLoader
 		public HCSLoader()
 		{
 			Logger = base.Logger;
-			
-			HarmonyWrapper.PatchAll();
 
+			var harmonyInstance = HarmonyWrapper.PatchAll();
+			harmonyInstance.Patch(AccessTools.Constructor(typeof(Game), Type.EmptyTypes), postfix: new HarmonyMethod(typeof(HCSLoader), nameof(LoadGirlsHook)));
+			
 			string modsDirectory = Path.Combine(Paths.GameRootPath, "Mods");
 
 			if (!Directory.Exists(modsDirectory))
 				Directory.CreateDirectory(modsDirectory);
-			
+
 			foreach (var subdir in Directory.GetDirectories(modsDirectory, "*", SearchOption.TopDirectoryOnly))
 			{
 				if (CharacterAdditionMod.TryLoad(subdir, out var addMod))
@@ -47,8 +49,8 @@ namespace HCSLoader
 					Logger.LogWarning($"Unknown mod type for folder '{Path.GetFileName(subdir)}', skipping");
 				}
 			}
-			
-			Logger.Log(LogLevel.Message, $"Loaded {CharacterAdditions.Count + CharacterModifications.Count} mods.");
+
+			Logger.Log(LogLevel.Message, $"Found {CharacterAdditions.Count + CharacterModifications.Count} mods.");
 		}
 
 		public void Update()
@@ -78,11 +80,13 @@ namespace HCSLoader
 					Logger.LogError($"Could not find character photo at '{Path.Combine(addition.ModDirectory, "photo.png")}', skipping");
 					continue;
 				}
+
 				if (!File.Exists(Path.Combine(addition.ModDirectory, "photothumbnail.png")))
 				{
 					Logger.LogError($"Could not find character photo thumbnail at '{Path.Combine(addition.ModDirectory, "photothumbnail.png")}', skipping");
 					continue;
 				}
+
 				if (!File.Exists(Path.Combine(addition.ModDirectory, "icon1.png")))
 				{
 					Logger.LogError($"Could not find icon #1 at '{Path.Combine(addition.ModDirectory, "icon1.png")}', skipping");
@@ -116,7 +120,7 @@ namespace HCSLoader
 																   .Find(y => y.fetishName.Equals(x, StringComparison.OrdinalIgnoreCase)))
 												  .ToList();
 
-				girlDefinition.dollParts = ProcessDollParts(addition, out girlDefinition.outfits, out girlDefinition.hairstyles).ToList();
+				girlDefinition.dollParts = ProcessDollParts(addition, out girlDefinition.outfits, out girlDefinition.hairstyles);
 
 				girlDefinition.voiceRecruit = LoadAudioGroup(Path.Combine(addition.ModDirectory, "voice-recruit"));
 				girlDefinition.voiceEmploy = LoadAudioGroup(Path.Combine(addition.ModDirectory, "voice-employ"));
@@ -130,12 +134,12 @@ namespace HCSLoader
 
 
 				definitions.Add(currentId++, girlDefinition);
+				CharacterAdditionDefs.Add(girlDefinition);
 			}
 
 			AccessTools.Field(typeof(GirlData), "_highestId").SetValue(Game.Data.Girls, currentId);
 
 			Logger.Log(LogLevel.Info, $"{Game.Data.Girls.GetAll().Count} girls loaded");
-
 			
 
 			//load modifications
@@ -159,7 +163,7 @@ namespace HCSLoader
 						Logger.LogWarning($"({modification.CharacterName}) {(type == GirlDollPartType.OUTFIT ? "Outfit" : "Hairstyle")} {inputIndex} was not found, skipping");
 						return;
 					}
-					
+
 					girl.dollParts[index.Value] = new GirlDefinitionDollPart
 					{
 						editorExpanded = true,
@@ -199,10 +203,10 @@ namespace HCSLoader
 
 						if (kv.Value.Front != null)
 							ReplacePart(GirlDollPartType.FRONTHAIR, kv.Key, kv.Value.Front);
-						
+
 						if (kv.Value.Back != null)
 							ReplacePart(GirlDollPartType.BACKHAIR, kv.Key, kv.Value.Back);
-						
+
 						if (kv.Value.Shadow != null)
 							ReplacePart(GirlDollPartType.HAIRSHADOW, kv.Key, kv.Value.Shadow);
 					}
@@ -283,16 +287,26 @@ namespace HCSLoader
 		private static bool _initialized = false;
 
 		[HarmonyPostfix, HarmonyPatch(typeof(Game), MethodType.Constructor, new Type[] { })]
-		static void LoadGirlsHook()
+		public static void LoadGirlsHook()
 		{
 			if (_initialized)
 				return;
+
+			Logger.LogInfo("Performing mod load");
 
 			PerformLoad();
 
 			_initialized = true;
 		}
 
+		[HarmonyPostfix, HarmonyPatch(typeof(Game), nameof(Game.Init))]
+		public static void GameInitHook()
+		{
+			// Add all custom characters to the wardrobe, if they aren't already there
+			foreach (var girlDefinition in CharacterAdditionDefs)
+				Game.Persistence.AddWardrobeGirl(girlDefinition);
+		}
+		
 		#endregion
 	}
 }

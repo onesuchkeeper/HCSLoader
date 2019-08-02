@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
-using Harmony;
+using HarmonyLib;
 using UnityEngine;
 
 namespace HCSLoader
@@ -43,22 +43,21 @@ namespace HCSLoader
 				var slot = window.girlSlots[i];
 				int slotOffset = slot.slotIndex + WardrobeGirlOffset;
 
-				if (slotOffset >= Game.Persistence.saveData.wardrobeGirls.Count)
-				{
-					GirlDefinitionFieldInfo.SetValue(slot, null);
-					WardrobeGirlSaveDataFieldInfo.SetValue(slot, null);
-				}
-				else
+				if (slotOffset < Game.Persistence.saveData.wardrobeGirls.Count)
 				{
 					var girl = Game.Persistence.saveData.wardrobeGirls[slotOffset];
 
 					GirlDefinitionFieldInfo.SetValue(slot, Game.Data.Girls.Get(girl.girlId));
 					WardrobeGirlSaveDataFieldInfo.SetValue(slot, girl);
 				}
+				else
+				{
+					GirlDefinitionFieldInfo.SetValue(slot, null);
+					WardrobeGirlSaveDataFieldInfo.SetValue(slot, null);
+				}
 
 				slot.Refresh(false);
 			}
-
 
 			//fix for ghost slot when paging
 			if (window.girlSlots[UiWardrobeWindow.storedSlotIndex].girlDefinition != null)
@@ -68,7 +67,6 @@ namespace HCSLoader
 			window.girlSlots[UiWardrobeWindow.storedSlotIndex].buttonBehavior.Disable(false);
 			
 			WardrobeWindowRefreshMethodInfo.Invoke(window, new object[] { false, true });
-
 
 			//fix for ghost tooltip when paging
 			Game.Events.Trigger(new InfoTooltipExitEvent());
@@ -95,6 +93,48 @@ namespace HCSLoader
 					yield return new CodeInstruction(OpCodes.Br, instruction.operand);
 
 					i++;
+				}
+				else
+				{
+					yield return instruction;
+				}
+			}
+		}
+
+		[HarmonyTranspiler, HarmonyPatch(typeof(UiWardrobeWindow), "Refresh")]
+		private static IEnumerable<CodeInstruction> OutfitSelectionFixTranspiler(IEnumerable<CodeInstruction> instructions)
+		{
+			int i = 0;
+
+			foreach (var instruction in instructions)
+			{
+				if (i++ == 21)
+				{
+					yield return instruction;
+					yield return new CodeInstruction(OpCodes.Call, AccessTools.PropertyGetter(typeof(WardrobeWindowPaging), nameof(WardrobeGirlOffset)));
+					yield return new CodeInstruction(OpCodes.Add);
+				}
+				else
+				{
+					yield return instruction;
+				}
+			}
+		}
+		
+		[HarmonyTranspiler]
+		[HarmonyPatch(typeof(UiWardrobeWindow), "OnHairstyleOptionSelected")]
+		[HarmonyPatch(typeof(UiWardrobeWindow), "OnOutfitOptionSelected")]
+		[HarmonyPatch(typeof(UiWardrobeWindow), "OnHairstyleButtonPressed")]
+		[HarmonyPatch(typeof(UiWardrobeWindow), "OnOutfitButtonPressed")]
+		private static IEnumerable<CodeInstruction> WardrobeOffsetFixTranspiler(IEnumerable<CodeInstruction> instructions)
+		{
+			foreach (var instruction in instructions)
+			{
+				if (instruction.opcode == OpCodes.Ldsfld && ((FieldInfo)instruction.operand).Name == "storedSlotIndex")
+				{
+					yield return instruction;
+					yield return new CodeInstruction(OpCodes.Call, AccessTools.PropertyGetter(typeof(WardrobeWindowPaging), nameof(WardrobeGirlOffset)));
+					yield return new CodeInstruction(OpCodes.Add);
 				}
 				else
 				{

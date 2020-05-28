@@ -16,26 +16,26 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>none</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>I:\HunieCam Studio 1.0.2\BepInEx\plugins\HCSLoader\</OutputPath>
+    <OutputPath>..\bin\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="0Harmony">
-      <HintPath>I:\HunieCam Studio 1.0.2\BepInEx\core\0Harmony.dll</HintPath>
+      <HintPath>..\lib\0Harmony.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Assembly-CSharp">
-      <HintPath>I:\HunieCam Studio 1.0.2\HunieCamStudio_Data\Managed\Assembly-CSharp.dll</HintPath>
+      <HintPath>..\lib\Assembly-CSharp.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="BepInEx">
-      <HintPath>I:\HunieCam Studio 1.0.2\BepInEx\core\BepInEx.dll</HintPath>
+      <HintPath>..\lib\BepInEx.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="BepInEx.Harmony">
-      <HintPath>I:\HunieCam Studio 1.0.2\BepInEx\core\BepInEx.Harmony.dll</HintPath>
+      <HintPath>..\lib\BepInEx.Harmony.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
@@ -48,11 +48,11 @@
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Xml" />
     <Reference Include="UnityEngine">
-      <HintPath>I:\HunieCam Studio 1.0.2\HunieCamStudio_Data\Managed\UnityEngine.dll</HintPath>
+      <HintPath>..\lib\UnityEngine.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.UI">
-      <HintPath>I:\HunieCam Studio 1.0.2\HunieCamStudio_Data\Managed\UnityEngine.UI.dll</HintPath>
+      <HintPath>..\lib\UnityEngine.UI.dll</HintPath>
       <Private>False</Private>
     </Reference>
   </ItemGroup>

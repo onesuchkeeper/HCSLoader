@@ -11,7 +11,7 @@ using static HCSLoader.ResourceLoader;
 
 namespace HCSLoader
 {
-	[BepInPlugin("com.bepis.hcsloader", "HCSLoader", "1.2")]
+	[BepInPlugin("com.bepis.hcsloader", "HCSLoader", "1.3")]
 	public class HCSLoader : BaseUnityPlugin
 	{
 		public new static ManualLogSource Logger;

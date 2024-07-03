@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using BepInEx;
-using BepInEx.Harmony;
 using BepInEx.Logging;
 using HarmonyLib;
 using UnityEngine;
@@ -11,7 +10,7 @@ using static HCSLoader.ResourceLoader;
 
 namespace HCSLoader
 {
-	[BepInPlugin("com.bepis.hcsloader", "HCSLoader", "1.3")]
+	[BepInPlugin("com.bepis.hcsloader", "HCSLoader", "1.4")]
 	public class HCSLoader : BaseUnityPlugin
 	{
 		public new static ManualLogSource Logger;
@@ -26,9 +25,10 @@ namespace HCSLoader
 		{
 			Logger = base.Logger;
 
-			var harmonyInstance = HarmonyWrapper.PatchAll();
+			var harmonyInstance = Harmony.CreateAndPatchAll(typeof(HCSLoader));
+
 			harmonyInstance.Patch(AccessTools.Constructor(typeof(Game), Type.EmptyTypes), postfix: new HarmonyMethod(typeof(HCSLoader), nameof(LoadGirlsHook)));
-			
+
 			string modsDirectory = Path.Combine(Paths.GameRootPath, "Mods");
 
 			if (!Directory.Exists(modsDirectory))
@@ -104,8 +104,8 @@ namespace HCSLoader
 				girlDefinition.girlPromo = LoadSprite(Path.Combine(addition.ModDirectory, "photo.png"));
 				girlDefinition.promoIsLewd = false;
 				girlDefinition.age = addition.Age;
-				girlDefinition.race = default(GirlRaceType);
-				girlDefinition.personality = default(GirlPersonalityType);
+				girlDefinition.race = default;
+				girlDefinition.personality = default;
 				girlDefinition.cupSize = (GirlCupSizeType)Enum.Parse(typeof(GirlCupSizeType), addition.CupSize, true);
 				girlDefinition.weight = addition.Weight;
 				girlDefinition.smokes = addition.Smokes;
@@ -140,7 +140,7 @@ namespace HCSLoader
 			AccessTools.Field(typeof(GirlData), "_highestId").SetValue(Game.Data.Girls, currentId);
 
 			Logger.Log(LogLevel.Info, $"{Game.Data.Girls.GetAll().Count} girls loaded");
-			
+
 
 			//load modifications
 
@@ -306,7 +306,7 @@ namespace HCSLoader
 			foreach (var girlDefinition in CharacterAdditionDefs)
 				Game.Persistence.AddWardrobeGirl(girlDefinition);
 		}
-		
+
 		#endregion
 	}
 }

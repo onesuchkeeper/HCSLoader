@@ -1,40 +1,25 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.30114.105
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.002.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HCSLoader", "HCSLoader\HCSLoader.csproj", "{478C91C2-0E77-4A0F-A75A-B69E5C473008}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "lib", "lib", "{AF5F8316-FE47-4DA4-A30E-467312123C58}"
-	ProjectSection(SolutionItems) = preProject
-		lib\Newtonsoft.Json.dll = lib\Newtonsoft.Json.dll
-		lib\System.Data.dll = lib\System.Data.dll
-		lib\System.Runtime.Serialization.dll = lib\System.Runtime.Serialization.dll
-		lib\System.Xml.dll = lib\System.Xml.dll
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Schemas", "Schemas", "{14E8B02B-BC2F-4813-8987-7CCBBDD72C70}"
-	ProjectSection(SolutionItems) = preProject
-		Schemas\AddGirlSchema.json = Schemas\AddGirlSchema.json
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Config", "Config", "{6E7CF74A-0A92-453C-A872-5EA0B3BEEB99}"
-	ProjectSection(SolutionItems) = preProject
-		Config\BepInEx.cfg = Config\BepInEx.cfg
-	EndProjectSection
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HCSLoader", "HCSLoader\HCSLoader.csproj", "{F286A733-FC5C-4D3D-8F72-8D58A51BC9CA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{478C91C2-0E77-4A0F-A75A-B69E5C473008}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{478C91C2-0E77-4A0F-A75A-B69E5C473008}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F286A733-FC5C-4D3D-8F72-8D58A51BC9CA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F286A733-FC5C-4D3D-8F72-8D58A51BC9CA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F286A733-FC5C-4D3D-8F72-8D58A51BC9CA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F286A733-FC5C-4D3D-8F72-8D58A51BC9CA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {3B5E9CC2-C7FA-41EB-B4EE-A69CB052E537}
+		SolutionGuid = {62A1BFC5-AF72-41DC-8917-0641E7F92720}
 	EndGlobalSection
 EndGlobal

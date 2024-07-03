@@ -1,9 +1,15 @@
-# HCSLoader 1.1
+# HCSLoader 1.4
 HunieCam Studio mod loader
 
-Currently able to add new girls and modify existing girls.
+Adds support for adding data and modifying exsisting instances of data. 
+Supports:
+* Girls
+* Items
+* Stations
+* Maps
+* Modifiers
 
-In the Wardrobe screen or the Girls screen, press F6 and F7 to page between girls when you have too many for the screen to fit.
+Extends Ui to show additional data
 
 **[Installation guide](https://github.com/bbepis/HCSLoader/wiki/Installation-guide)**
 
